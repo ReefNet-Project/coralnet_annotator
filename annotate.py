@@ -18,6 +18,7 @@ def deploy_classifier(data):
     }
 
     print("[INFO]: Sending request to deploy classifier and start classification process \n")
+    print(url)
     response = requests.post(url, headers=headers, data=json.dumps(data))
     print(f"[INFO]: response.status_code = {response.status_code} \n")
     job_url = response.headers["Location"]
@@ -33,21 +34,20 @@ def deploy_classifier(data):
     print(f"[INFO]: response.status_code = {response.status_code} \n")
     while response.status_code == 200:
         # wait 10 seconds before checking again
-        time.sleep(10)
+        time.sleep(30)
         # Keep checking until the job is finished
         response = requests.get(url, headers=headers)
-
-    print(response.status_code)
-    print(response.text)
+        print(f"[INFO]: Checking ... response.status_code = {response.status_code} \n")
+    
     # Fetch the result of the finished classifier deployment
     result_url = response.headers["Location"]
-
     return result_url
 
 
 
 def main():
     # prepare data 
+    print('[INFO]: Strting Annotation process')
     data = prepare_image_data()
     # Fetch the result of the finished classifier deployment
     result_url = deploy_classifier(data)
@@ -66,7 +66,6 @@ def main():
         json.dump(classification_result, f)
 
     return
-
 
 if __name__ == "__main__":
     main()

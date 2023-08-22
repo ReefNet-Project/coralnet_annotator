@@ -4,6 +4,9 @@ import numpy as np
 from urllib.request import urlopen
 
 def get_labels_from_points(points):
+    """
+        get labels for each point based on the highest score.
+    """
     labels = []
     for point in points:
         classifications = point['classifications']
@@ -42,20 +45,28 @@ def main():
         url = attributes['url']
         points = attributes['points']
         labels = get_labels_from_points(points)
-        #load the image frol url and plot labels on it 
+
         np_image = PIL.Image.open(urlopen(url))
-        cmap = plt.get_cmap('nipy_spectral', 98)  # The second argument is the number of distinct colors
-        # Convert labels to integers
-        labels_mapped = [label_dict[label["label_code"]] for label in labels]  # Assume label_dict maps labels to integers
-        # Extract the x and y coordinates of the points
+        labels_mapped = [label_dict[label["label_code"]] for label in labels]
+
+        # Find the unique labels and corresponding color code
+        unique_labels = list(set(labels_mapped))
+        unique_labels_count = len(unique_labels)
+
+        # Use the unique labels count for the color map
+        cmap = plt.get_cmap('nipy_spectral', unique_labels_count)
+
         x_coords = [label['column'] for label in labels]
         y_coords = [label['row'] for label in labels]
-        # Create a scatter plot with colored points
         plt.figure(figsize=(10, 10))
         plt.imshow(np_image)
-        plt.scatter(x_coords, y_coords, c=labels_mapped, cmap=cmap, s=10)
-        # Add a colorbar for reference
-        plt.colorbar(ticks=range(80), label='Labels')
+        scatter_plot = plt.scatter(x_coords, y_coords, c=labels_mapped, cmap=cmap, s=10)
+        
+        # Create a colorbar with custom tick labels
+        offset = 0.5 / unique_labels_count  # Half the length of one color area
+        cbar = plt.colorbar(scatter_plot, ticks=[label + offset for label in unique_labels])  # Add the offset to the tick positions
+        cbar.ax.set_yticklabels([label for label, code in label_dict.items() if code in unique_labels])  # set the label names
+
         plt.savefig(f"image_{index}.png")
 
 

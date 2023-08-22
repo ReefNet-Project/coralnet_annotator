@@ -11,3 +11,7 @@ Red Sea Global data/
 *.JPG
 
 *.jpg
+
+output/*
+
+!output/.gitkeep 

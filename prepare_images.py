@@ -20,16 +20,16 @@ def get_s3_image_download_links():
     # List all objects in the bucket
     objects = bucket.objects.all()
 
-    for i, obj in enumerate(objects):
-        if i > 1:
-            break
+    for index, obj in enumerate(objects):
         # Generate pre-signed URL without an expiration time
         download_link = s3.generate_presigned_url(
             'get_object',
             Params={'Bucket': BUCKET_NAME, 'Key': obj.key}
         )
         download_links.append(download_link)
-
+        if index > 1:
+            break
+    print(f"[INFO]: Getting S3 image download links, total images: {len(download_links)}")
     return download_links
 
 def create_grid_points(width, height, num_points):
@@ -71,13 +71,14 @@ def create_grid_points(width, height, num_points):
 
 # Prepare image data
 def prepare_image_data():
+    print("[INFO]: Preparing image data")
     image_urls = get_s3_image_download_links()
     # Create the data object
     data = {
         "data": []
     }
 
-    for url in image_urls:
+    for index ,url in enumerate(image_urls):
         # Download the image data
         image_data = requests.get(url).content
 
@@ -90,9 +91,6 @@ def prepare_image_data():
         # Create grid points
         points = create_grid_points(width, height, 200)
         print(len(points))
-        if(len(points) > 200):
-            continue
-
         # Append image data
         data["data"].append({
             "type": "image",
@@ -101,6 +99,9 @@ def prepare_image_data():
                 "points": points
             }
         })
-
+        if index > 1: 
+            break
+        
+    print(f"[INFO]: Done Preparing image data: {len(data['data'])} images")
     return data
 
