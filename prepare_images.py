@@ -1,3 +1,4 @@
+import json
 import boto3
 import math
 from PIL import Image
@@ -27,7 +28,7 @@ def get_s3_image_download_links():
             Params={'Bucket': BUCKET_NAME, 'Key': obj.key}
         )
         download_links.append(download_link)
-        if index > 1:
+        if index > 98:
             break
     print(f"[INFO]: Getting S3 image download links, total images: {len(download_links)}")
     return download_links
@@ -99,9 +100,44 @@ def prepare_image_data():
                 "points": points
             }
         })
-        if index > 1: 
-            break
         
     print(f"[INFO]: Done Preparing image data: {len(data['data'])} images")
+
+
+    # save the json result into file 
+    with open('data.json', 'w') as f:
+        json.dump(data, f)
+
     return data
 
+
+
+def update_urls():
+    image_urls = get_s3_image_download_links()
+    # Read classification_result from classification_result.json
+    with open("classification_result.json", "r") as classification_result_file:
+        classification_result = json.load(classification_result_file)['data']
+
+    # Update the classification_result based on data
+    for index, url in enumerate(image_urls):
+        old_url = classification_result[index]['attributes']['url']
+        old_url_suffix = old_url.split('?')[0]
+        url_suffix = url.split('?')[0]
+        if old_url_suffix == url_suffix:
+            classification_result[index]['attributes']['url'] = url
+            classification_result[index]['id'] = url
+        else:
+            print("[WARNING]: Urls don't match")
+
+    # Save the updated classification_result into the file
+    with open('classification_result.json', 'w') as f:
+        json.dump({'data': classification_result}, f)
+    
+
+def main():
+    # prepare_image_data()
+    
+    update_urls()
+
+if __name__ == '__main__':
+    main()

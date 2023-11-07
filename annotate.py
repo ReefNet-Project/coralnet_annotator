@@ -20,9 +20,10 @@ def deploy_classifier(data):
     print("[INFO]: Sending request to deploy classifier and start classification process \n")
     print(url)
     response = requests.post(url, headers=headers, data=json.dumps(data))
+    print(response.text)
     print(f"[INFO]: response.status_code = {response.status_code} \n")
     job_url = response.headers["Location"]
-
+    print(job_url)
     # Check the status of the classifier deployment
     url = f"https://coralnet.ucsd.edu{job_url}"
     headers = {
@@ -41,6 +42,8 @@ def deploy_classifier(data):
     
     # Fetch the result of the finished classifier deployment
     result_url = response.headers["Location"]
+    print("result url")
+    print(result_url)
     return result_url
 
 
